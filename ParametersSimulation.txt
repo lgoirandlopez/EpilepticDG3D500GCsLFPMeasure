@@ -1,0 +1,10 @@
+nGClayer	25	<class 'int'>	
+PPintervals	0	<class 'int'>	
+PPnspk	10	<class 'int'>	
+nprocess	5	<class 'int'>	
+simvar	False	<class 'bool'>	
+nspr	10	<class 'int'>	
+lightstim	False	<class 'bool'>	
+GCstim	0.002	<class 'float'>	
+IPlist	[0, 1, 2, 3, 4]	<class 'list'>	
+randseed	False	<class 'bool'>	

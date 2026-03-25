@@ -1,0 +1,22 @@
+/* -----------------------------------------------------------------------------
+MCTemplate.hoc Template to initiate creation of the mossy cells in LFPy2.0
+----------------------------------------------------------------------------- */
+// Author Lucas Goirand-Lopez adapted from Santhakumar et al. 2005
+begintemplate MossyCell
+
+print "Creation from MCtemplate"
+public init
+public soma, mcdend1, mcdend2, mcdend3, mcdend4
+public all, pdend, ddend, fl
+
+objref all, pdend, ddend, fl
+
+proc init() {
+	all = new SectionList()
+	pdend  = new SectionList()
+	ddend  = new SectionList()
+}
+
+create soma[1], mcdend1[1], mcdend2[1], mcdend3[1], mcdend4[1]
+
+endtemplate MossyCell

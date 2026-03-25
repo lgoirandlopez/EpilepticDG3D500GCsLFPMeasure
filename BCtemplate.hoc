@@ -1,0 +1,24 @@
+/* -----------------------------------------------------------------------------
+BCTemplate.hoc Template to initiate creation of the basket cells in LFPy2.0
+----------------------------------------------------------------------------- */
+// Author Lucas Goirand-Lopez adapted from Santhakumar et al. 2005
+begintemplate BasketCell
+
+print "Creation from BCtemplate"
+public init
+public soma, bcdend1, bcdend2, bcdend3, bcdend4
+public all, adend, bdend, cdend, ddend
+
+objref all, adend, bdend, cdend, ddend
+
+proc init() {
+	all = new SectionList()
+	adend  = new SectionList()
+	bdend  = new SectionList()
+	cdend  = new SectionList()
+	ddend  = new SectionList()
+}
+
+create soma[1], bcdend1[1], bcdend2[1], bcdend3[1], bcdend4[1]
+
+endtemplate BasketCell

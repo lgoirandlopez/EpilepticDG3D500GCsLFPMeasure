@@ -1,0 +1,269 @@
+/* -----------------------------------------------------------------------------
+GC0_ep_noNaP.hoc
+Simplified 3d model
+5 soma by layer, each layer is separated by 60 um on z-axis (axis septotemporal)
+The 5 soma are separated with 300um
+----------------------------------------------------------------------------- */
+
+// Create sections:
+create soma[1], gcdend1[4], gcdend2[4]
+
+proc celldef() { // processus giving the order of each process to follow to create the cell
+	topol() // processus of the topology, i.e connecting the different geometric section of the cell
+	subsets() // Create the section list for each part of cells
+	geom() // Apply the geometry
+	biophys() // Set the ionic channels parameters and the intrinsec parameters of each section
+	geom_nseg() 
+	print "------------------------------------- GC -----------------------------------------"
+}
+
+proc topol() { local i // declaration of local variable
+// Connecting the sections following a defined geometry
+	connect gcdend1[0](0), soma(1)
+	connect gcdend2[0](0), soma(1)
+	
+	for i=1,3 {
+	connect gcdend1[i](0), gcdend1[i-1](1)
+	}
+	for i=1,3 {
+	connect gcdend2[i](0), gcdend2[i-1](1)
+	}
+	
+	shape3d() // Call the 3D geometric processus function
+}
+
+proc shape3d() { local scale_area // declaration of local variable
+// Add 3D information:	
+	
+	scale_area = 1 // modify the scale oh the area
+	 
+	soma {pt3dclear() //Shape Soma
+		pt3dadd(-116.5121762717863, 200.66262760319296, 0, 16.8*scale_area) //16.8 micrometer diameter
+		pt3dadd(-117.09852815003477, 217.4523920885831, 0, 16.8*scale_area) //16.8 micrometer diameter
+	}
+	
+	gcdend1[0] {pt3dclear() //Shape Granule Cell Layer Dendrite 1 
+		pt3dstyle(1,-117.09852815003477, 217.4523920885831, 0) // Connection to the end of the soma
+		pt3dadd(-117.09852815003477, 217.4523920885831, 0, 3*scale_area)
+		pt3dadd(-153.0001800073538, 250.93106281960002, 9.5, 3*scale_area)
+	}
+	gcdend1[1] {pt3dclear() // Shape Proximal dendrite 1 
+		pt3dadd(-153.0001800073538, 250.93106281960002, 9.5, 3*scale_area)
+		pt3dadd(-158.14009916263922, 398.1089525689682, 38., 3*scale_area)
+	}
+	gcdend1[2] {pt3dclear() // Shape Midal dendrite 1 
+		pt3dadd(-158.14009916263922, 398.1089525689682, 38., 3*scale_area)
+		pt3dadd(-163.28001831792463, 545.2868423183364, 66.5, 3*scale_area)
+	}
+	gcdend1[3] {pt3dclear() // Shape Distal dendrite 1 
+		pt3dadd(-163.28001831792463, 545.2868423183364, 66.5, 3*scale_area)
+		pt3dadd(-168.41993747321004, 692.4647320677046, 95., 3*scale_area)
+	}
+	gcdend2[0] {pt3dclear() //Shape Granule Cell Layer Dendrite 2
+		pt3dstyle(1,-117.09852815003477, 217.4523920885831, 0) // Connection to the end of the soma
+		pt3dadd(-117.09852815003477, 217.4523920885831, 0, 3*scale_area)
+		pt3dadd(-83.61985741901768, 253.354043945902, 16.5, 3*scale_area)
+	}
+	gcdend2[1] {pt3dclear() // Shape Proximal dendrite 2 
+		pt3dadd(-83.61985741901768, 253.354043945902, 9.5, 3*scale_area)
+		pt3dadd(-88.75977657430309, 400.53193369527025, 38., 3*scale_area)
+	}
+	gcdend2[2] {pt3dclear() // Shape Midal dendrite 2
+		pt3dadd(-88.75977657430309, 400.53193369527025, 38., 3*scale_area)
+		pt3dadd(-93.8996957295885, 547.7098234446385, 66.5, 3*scale_area)
+	}
+	gcdend2[3] {pt3dclear() // Shape Distal dendrite 2
+		pt3dadd(-93.8996957295885, 547.7098234446385, 66.5, 3*scale_area)
+		pt3dadd(-99.03961488487391, 694.8877131940067, 95., 3*scale_area)
+	}
+	
+}	
+
+
+
+objref all, gcldend, pdend, mdend, ddend // declaration of local variable
+// Create the section list for each part of cells, soma, section for GCL dendirtes, midal dendrites and distal dendrites. Allows to set the same parameters for several sections in section list
+proc subsets(){ local i
+	all = new SectionList()
+		soma all.append()
+		for i=0, 3 gcdend1 [i] all.append()
+		for i=0, 3 gcdend2 [i] all.append()
+
+	gcldend  = new SectionList()
+		gcdend1 [0] gcldend.append()
+		gcdend2 [0] gcldend.append()
+
+	pdend  = new SectionList()
+		gcdend1 [1] pdend.append()
+		gcdend2 [1] pdend.append()
+
+	mdend  = new SectionList()
+		gcdend1 [2] mdend.append()
+		gcdend2 [2] mdend.append()
+
+	ddend  = new SectionList()
+		gcdend1 [3] ddend.append()
+		gcdend2 [3] ddend.append()
+} 
+
+proc biophys() {local g_pas_fit_, cm_fit, gNaP_fit, gNaT_fit, vshift_fit, Ks_fit, Kf_fit, gKA_fit, epas_fit, CaT_fit, CaN_fit, CaL_fit, SK_fit, BK_fit, ggabaa_fit, gkir_fit // declaration of local variable
+// Set the ionic channels parameters and the intrinsec parameters of each section
+	
+	// Update the psection information
+	forall {
+		area(0.5)
+	}
+// Set biophysical parameters:
+	// Parameters scale adjustement 
+	g_pas_fit_ = 1.8e-5 
+	epas_fit = -83.8
+	cm_fit = .75	
+	gNaP_fit = 0
+	gNaT_fit = 1
+	Ks_fit = 1
+	Kf_fit = 1
+	vshift_fit = 0
+	
+	gKA_fit = 1
+	CaT_fit = 1
+	CaN_fit = 1
+	CaL_fit = 1
+	BK_fit = 1
+	SK_fit = 1
+	
+	ggabaa_fit = 1
+	gkir_fit = 1
+	
+	forall {
+		Ra = 184 // (Ohm.cm)
+		cm = cm_fit // (microFarad/cm²)
+		insert pas
+		g_pas = g_pas_fit_ // (S/cm²) 
+		e_pas = epas_fit // (mV)
+	}
+	
+	//Insert Intracellular Calcium Concentration
+	forall {
+	  insert ccanl
+	  catau_ccanl = 10 //(ms)
+	  caiinf_ccanl = 5e-6 //(mM)
+	  cao_ccanl = 2 //(mM)
+	}
+	
+	// Insert active mecanism
+	forall {
+		insert nat
+		insert kfast
+		insert kslow
+		insert tca
+		insert nca
+		insert lca
+		insert bk
+		insert sk 
+		insert kir
+		insert igabaal
+		insert nap2
+	}
+	soma {
+		insert borgka
+	}
+	
+	// Set reversal potential 
+	forall {
+	  ena = 45 // (mV)
+	  ek = -90 // (mV)
+	  egabaa_igabaal = -70 // (mV)
+	  }
+	  
+	 forall { // Shift for HH equation of NaT et Kfast and Kslow
+		 vshift_nat = vshift_fit // (mV)
+		 vshift_kfast = vshift_fit // (mV)
+		 vshift_kslow = vshift_fit // (mV)
+	 }
+	 forall {
+		gnapbar_nap2 = 0  // (S/cm²)
+		ggabaa_igabaal = 4*0.722e-05*ggabaa_fit // (S/cm²)
+ 		gkkirbar_kir = 4*g_pas_fit_*gkir_fit // (S/cm²)
+	}
+	  
+	soma { 
+		gnatbar_nat = 0.12*gNaT_fit // (S/cm²)
+		gnapbar_nap2 = gNaP_fit*1.55e-5 // (S/cm²)
+		taumcoef_nap2 = 525 // (S/cm²)
+		mvhalf_nap2 = -48.5 // (mV)
+		mslope_nap2 = -3.4 // (mV)
+		hvhalf_nap2 = -15.5 // (mV)
+		hslope_nap2 = 13.3 // (mV)
+		gkfbar_kfast = 0.016*Kf_fit // (S/cm²)
+		gksbar_kslow = 0.006*Ks_fit // (S/cm²)
+		gkabar_borgka = gKA_fit*0.012 // (S/cm²)
+		gtcabar_tca = 0.000037*CaT_fit // (S/cm²)
+		gncabar_nca = 0.002*CaN_fit // (S/cm²)
+		glcabar_lca = 0.005*CaL_fit // (S/cm²)
+		gbkbar_bk = 0.0006*BK_fit // (S/cm²)
+		gskbar_sk = 0.001 *SK_fit // (S/cm²)
+		}
+	
+	forsec gcldend {
+		gnatbar_nat = 0.018*gNaT_fit // (S/cm²)
+		gkfbar_kfast = 0.004*Kf_fit // (S/cm²)
+		gksbar_kslow = 0.006*Ks_fit // (S/cm²)
+		gtcabar_tca = 0.000075*CaT_fit // (S/cm²)
+		gncabar_nca = 0.003*CaN_fit // (S/cm²)
+		glcabar_lca = 0.0075*CaL_fit // (S/cm²)
+		gbkbar_bk = 0.0006*BK_fit // (S/cm²)
+		gskbar_sk = 0.0004*SK_fit // (S/cm²)
+	}
+	
+	forsec pdend {
+		g_pas = g_pas_fit_ * (0.000063/0.00004) // (S/cm²)
+		e_pas = -81.74 // (mV)
+		cm = cm_fit*(1.6/1) // (microFarad/cm²)
+		gnatbar_nat = 0.013*gNaT_fit //(S/cm²)
+		gkfbar_kfast = 0.004*Kf_fit //(S/cm²)
+		gksbar_kslow = 0.006*Ks_fit//(S/cm²)
+		gtcabar_tca = 0.00025*CaT_fit //(S/cm²)
+		gncabar_nca = 0.001*CaN_fit //(S/cm²)
+		glcabar_lca = 0.0075*CaL_fit //(S/cm²)
+		gbkbar_bk = 0.001*BK_fit //(S/cm²)
+		gskbar_sk = 0.0002*SK_fit //(S/cm²)
+	}
+	
+	forsec mdend {
+		g_pas = g_pas_fit_ * (0.000063/0.00004) //(S/cm²)
+		e_pas = -81.74 //(mV)
+		cm = cm_fit*(1.6/1) // (microFarad/cm²)
+		gnatbar_nat = 0.008*gNaT_fit //(S/cm²)
+		gkfbar_kfast = 0.001*Kf_fit //(S/cm²)
+		gksbar_kslow = 0.006*Ks_fit //(S/cm²)
+		gtcabar_tca = 0.0005*CaT_fit //(S/cm²)
+		gncabar_nca = 0.001*CaN_fit //(S/cm²)
+		glcabar_lca = 0.0005*CaL_fit //(S/cm²)
+		gbkbar_bk = 0.0024*BK_fit //(S/cm²)
+		gskbar_sk = 0*SK_fit //(S/cm²)
+	}
+	
+	forsec ddend {
+		g_pas = g_pas_fit_ * (0.000063/0.00004) //(S/cm²)
+		e_pas = -81.74 //(mV)
+		cm = cm_fit*(1.6/1) // (microFarad/cm²)
+		gnatbar_nat = 0*gNaT_fit //(S/cm²)
+		gkfbar_kfast = 0.001*Kf_fit //(S/cm²)
+		gksbar_kslow = 0.008*Ks_fit //(S/cm²)
+		gtcabar_tca = 0.001*CaT_fit //(S/cm²)
+		gncabar_nca = 0.001*CaN_fit //(S/cm²)
+		glcabar_lca = 0*CaL_fit //(S/cm²)
+		gbkbar_bk = 0.0024*BK_fit //(S/cm²)
+		gskbar_sk = 0*SK_fit //(S/cm²)
+	}
+}
+
+proc geom() {
+}
+
+proc geom_nseg() {
+}
+
+access soma
+
+celldef()

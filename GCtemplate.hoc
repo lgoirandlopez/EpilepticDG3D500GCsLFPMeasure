@@ -1,0 +1,26 @@
+/* -----------------------------------------------------------------------------
+GCTemplate.hoc Template to initiate creation of the granule cells in LFPy2.0
+----------------------------------------------------------------------------- */
+// Author Lucas Goirand-Lopez adapted from Santhakumar et al. 2005
+
+begintemplate GranuleCell
+
+print "Creation from GCtemplate"
+public init
+public soma, gcdend1, gcdend2
+public all, gcldend, pdend, mdend, ddend
+
+objref all, gcldend, pdend, mdend, ddend
+
+proc init() {
+	all = new SectionList()
+	gcldend  = new SectionList()
+	pdend  = new SectionList()
+	mdend  = new SectionList()
+	ddend  = new SectionList()
+}
+
+create soma[1], gcdend1[1], gcdend2[1]
+
+
+endtemplate GranuleCell
