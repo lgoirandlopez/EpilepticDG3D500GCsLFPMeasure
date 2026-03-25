@@ -15,3 +15,9 @@ Code analysis associated to the article Goirand-Lopez et al. 2025. This reposito
 - [numPy](https://numpy.org/) (v. 1.21.0 used for this code)
 - [scipy ](https://scipy.org/) (v. 1.5.2 used for this code)
 - [matplotlib](https://matplotlib.org/) (v. 3.7.5 used for this code)
+
+## Manipulations before lauching a first simulation
+### mknrndll
+### Configure the pathfile
+
+## Description
