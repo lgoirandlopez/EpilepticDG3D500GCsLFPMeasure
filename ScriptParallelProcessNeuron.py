@@ -1,63 +1,46 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Feb 12 00:44:10 2026
+Created on Thu Feb 12 00:44:10 2026 
+Last Update : Fri Mar 6 2026
 
 @author: goirand-lopez
 """
 import os
 from os.path import join
-import sys
 import time
 
-def progressbar(it, prefix="", size=60, out=sys.stdout): # Python3.6+
-    print('\n')
-    count = len(it)
-    start = time.time()
-    def show(j):
-        x = int(size*j/count)
-        remaining = ((time.time() - start) / j) * (count - j)
 
-        mins, sec = divmod(remaining, 60)
-        time_str = f"{int(mins):02}:{sec:05.2f}"
+# !!! Before using the code you have to select the right folders if you don't want in the same folder !
+cellpath = os.getcwd() #  Path of the folder where your neuron models are
+scriptpath = os.getcwd() #  Path of the folder where your script is
+resultsfolderpathname = cellpath # Path of the folder where you want to store the results
 
-        print(f"{prefix}[{u'█'*x}{('.'*(size-x))}] {j}/{count} Temps estimé : {time_str}", end='\r', file=out, flush=False)
 
-    for i, item in enumerate(it):
-        yield item
-        show(i+1)
-    print('\n', flush=True, file=out)
-
-# !!! Before using the code you have to Select the right folders!
-folderpathname = 'C:/Users/goirand-lopez/Desktop/Neurones-models/'
-                
-model_folder = join('NEURON 7.8 AMD64', 'DG3D500GCsLFPMeasuresTemp')
-
-cellpath = join(folderpathname,model_folder)
-scriptpath = join(folderpathname,join('NEURON 7.8 AMD64', 'DG3D500GCsLFPMeasuresTemp')) # Where your script is
-os.chdir(cellpath)
-folderpathname = cellpath #'C:/Users/goirand-lopez/Desktop'
-
+PPnspk = 10 # Number of GC activated by the initial stimulation, 5 or 10 in our model
+PPWindowsLength = 0 # Duration of the regular stimulation windows [0, 15, 30, 45, 60, 75, 90, 105] ms
+PPint = PPWindowsLength/PPnspk # Calculated regular intervals between initial stimulation
+nsprlist = [10] #[10, 13, 16, 19, 22, 25, 28, 31] #!!! Be careful to limit 
 
 PPint = 0
-trial = 0
+PPnspk = 10 # Number of GC activated by the initial stimulation, 5 or 10 in our model
 
-for nspr in [10] :
+for nspr in nsprlist :
     
     ParametersSimulation = dict(
-    nGClayer = 25,
-    PPintervals = PPint ,
-    PPnspk = 10 ,
-    nprocess = 5,
-    simvar = False,
-    nspr = nspr,
-    lightstim = False,
-    GCstim = .01/5, # number of GCs stimulated by each PP,
-    IPlist = [0,1,2,3,4],
-    randseed = False
-    # trial = trial # Variable used to know if we add to load the channel mecanism or if it's already done
+    nGClayer = 25, # Number of layer in GCL 5 or 25 in our models
+    PPnspk = PPnspk , # Number of GC activated by the initial stimulation, 5 or 10 in our model
+    PPintervals = PPint, # PPint is calculated to have a PPnspk(5 or 10) regular intervals between sitmulation in windows of [0, 15, 30, 45, 60, 75, 90, 105] ms
+    nprocess = 5, # Number of process to activate parallely
+    simvar = False,  # Do we simulate the activity of not
+    nspr = nspr, # nspr among [10, 13, 16, 19, 22, 25, 28, 31]
+    lightstim = False, # Addition or not of a light stimulation during the simulation after initial stimulation
+    GCstim = 1, # Number of GCs stimulated by each PP,
+    IPlist = [0,1,2,3,4,5,6,7,8,9], # The IPs are the identification of the simulation, here 10 simulation by case
+    randseed = False, # Activation or not of randomized the seed used to generate random events
+    saveopt = True # Option choice to save or not results
     )
     
-    with open(os.path.join(cellpath, 'ParametersSimulation'+'.txt'), "w") as f:
+    with open(os.path.join(cellpath, 'ParametersSimulationParallel'+'.txt'), "w") as f:
         for key,val in ParametersSimulation.items() :
             f.write('{}\t{}\t{}\t'.format(key,val,type(val)))
             f.write('\n')

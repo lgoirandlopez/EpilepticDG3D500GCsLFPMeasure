@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Nov 15 10:52:50 2023
-Last Update : Fri Mar 6 2026
+Last Update : Thu Mar 26 2026
 
 @author: goirand-lopez
 """
@@ -434,7 +434,7 @@ def custom_error_callback(error):
 #!!! Main code
 def Network500PPs_1IPfor1window_1PP1GC_PPintervalExploration(IP, nspr, PPintervals, KARfactor, PPnspk,
                                                              resultsfolderpathname, cellpath,
-                                                             GCstim=1, nGClayer=25,simvar=True,
+                                                             GCstim=1, nGClayer=25, simvar=True, 
                                                              lightstim=False, randseed=False, saveopt=True) :
     '''
     Simulation function of the reduced dentate gyrus as introduced in the article.
@@ -511,7 +511,7 @@ def Network500PPs_1IPfor1window_1PP1GC_PPintervalExploration(IP, nspr, PPinterva
     if Filenametemp not in os.listdir(BASEPATH4RESULT) :
             OUTPUTPATH=join(BASEPATH4RESULT,Filenametemp)
             os.mkdir(OUTPUTPATH)
-    BASEPATH4RESULT = join(BASEPATH4RESULT,Filenametemp)
+    BASEPATH4RESULT = join(BASEPATH4RESULT,Filenametemp)    
     
     '''
 ----------------------------------------------------------------------------------------------
@@ -1608,7 +1608,7 @@ def Network500PPs_1IPfor1window_1PP1GC_PPintervalExploration(IP, nspr, PPinterva
                 titlebase = '{}%A/{}%K%' .format(int((1-KARfactor)*100),int(KARfactor*100))
             else :
                 titlebase = '100%AMPAR'
-            titlebase+= ' - {}%spr - {}%PPint - {}GCs stim'.format(nspr,PPintervals,int(GCstim))
+            titlebase+= ' - {}%spr - {}%PPint - {}GCs stim'.format(nspr,PPintervals,int(GCstim*npp))
             titlebase+='{}'.format(['Base','LightStim'][lightstim>0])
             
         f,ax = plt.subplots(dpi=200)
@@ -1895,81 +1895,43 @@ def Network500PPs_1IPfor1window_1PP1GC_PPintervalExploration(IP, nspr, PPinterva
     return '--------- '+datetime.datetime.today().strftime("%Y-%m-%d %H:%M")+'\n'+str((IP,nspr,PPintervals,KARfactor,PPnspk,resultsfolderpathname,GCstim))+' DONE ---------'
     
     
+    
+# !!! Before using the code you have to select the right folders if you don't want in the same folder !
+cellpath = os.getcwd() #  Path of the folder where your neuron models are
+scriptpath = os.getcwd() #  Path of the folder where your script is
+resultsfolderpathname = cellpath # Path of the folder where you want to store the results
 
-if __name__ == '__main__': # protect the entry point
-    freeze_support() #Allows to run as a .exe file
-    
-    # !!! Before using the code you have to select the right folders if you don't want in the same folder !
-    cellpath = os.getcwd() #  Path of the folder where your neuron models are
-    scriptpath = os.getcwd() #  Path of the folder where your script is
-    resultsfolderpathname = cellpath # Path of the folder where you want to store the results
-    
-    ParametersSimulation = dict()  
-    with open(os.path.join(cellpath, 'ParametersSimulationParallel'+'.txt'), "r") as f:  
-        for line in f:
-            temp = line.split('\t')
-            typval = temp[2]
-            key = temp[0]
-            if "<class 'int'>" in typval:   
-                ParametersSimulation[key]=int(temp[1])
-            elif "<class 'bool'>" in typval:
-                ParametersSimulation[key]=bool(temp[1])
-            elif "<class 'float'>" in typval:
-                ParametersSimulation[key]=float(temp[1])
-            elif "<class 'list'>" in typval:
-                ParametersSimulation[key]=[int(x) for x in temp[1][1::3]]
-        #trial = ParametersSimulation['trial']
+ParametersSimulation = dict()  
+with open(os.path.join(cellpath, 'ParametersSimulationSingle'+'.txt'), "r") as f:  
+    for line in f:
+        temp = line.split('\t')
+        typval = temp[2]
+        key = temp[0]
+        if "<class 'int'>" in typval:   
+            ParametersSimulation[key]=int(temp[1])
+        elif "<class 'bool'>" in typval:
+            ParametersSimulation[key]=bool(temp[1])
+        elif "<class 'float'>" in typval:
+            ParametersSimulation[key]=float(temp[1])
+        elif "<class 'list'>" in typval:
+            ParametersSimulation[key]=[int(x) for x in temp[1][1::3]]
+    #trial = ParametersSimulation['trial']
 
 
-    try :
-        neuron.load_mechanisms(cellpath)
-    except :
-        pass
+try :
+    neuron.load_mechanisms(cellpath)
+except :
+    pass
+
+os.chdir(cellpath)
+resultsfolderpathname =  cellpath 
     
-    os.chdir(cellpath)
-    resultsfolderpathname =  cellpath 
+
     
-    TASKS = []
-    
-    
-    IPlistAMPA = ParametersSimulation['IPlist'] #list
-    IPlistKA = ParametersSimulation['IPlist']#list
-    
-    
-    TASKS += [(IP,ParametersSimulation['nspr'],ParametersSimulation['PPintervals'],0,ParametersSimulation['PPnspk'],
-               resultsfolderpathname,cellpath,ParametersSimulation['GCstim'],ParametersSimulation['nGClayer'],
-                ParametersSimulation['simvar'],ParametersSimulation['lightstim'],ParametersSimulation['randseed'],
-                ParametersSimulation['saveopt']) for IP in IPlistAMPA]
-    TASKS += [(IP,ParametersSimulation['nspr'],ParametersSimulation['PPintervals'],.5,ParametersSimulation['PPnspk'],
-               resultsfolderpathname,cellpath,ParametersSimulation['GCstim'],ParametersSimulation['nGClayer'],
-               ParametersSimulation['simvar'],ParametersSimulation['lightstim'],ParametersSimulation['randseed'],
-               ParametersSimulation['saveopt']) for IP in IPlistKA]
-    
-    with Pool(processes=ParametersSimulation['nprocess']) as pool :
         
-        print('''
-        -------------------------------------------------------------------
-        ***************************************'''+ '\n -------- PPintervals = {} ms, spr = {} -------- \n'.format(ParametersSimulation['PPintervals'],ParametersSimulation['nspr'])+ '''***************************************
-        -------------------------------------------------------------------
-        ''')
-        print(datetime.datetime.today().strftime("%Y-%m-%d %H:%M"))
-        
-        IPsdone = [pool.apply_async(Network500PPs_1IPfor1window_1PP1GC_PPintervalExploration,args=T,callback=custom_callback,
-                                    error_callback=custom_error_callback) for T in TASKS]
-        
-        try : 
-            val = [res.get(timeout=45*60) for res in IPsdone]
-        except multiprocessing.TimeoutError :
-            print("Process too long... Closing of the workers pool")
-            pool.terminate()
-        
-        # close the process pool
-        pool.close()
-        # wait a moment
-        pool.join()
-        # report a message
-        print('Main all done.')
-        # report the number of child processes that are still active
-        children = active_children()
-        print(f'Active children: {len(children)}')
-        
+#!!! Lauch the simulation
+Network500PPs_1IPfor1window_1PP1GC_PPintervalExploration(ParametersSimulation['IP'],ParametersSimulation['nspr'],
+                                                         ParametersSimulation['PPintervals'], 0,ParametersSimulation['PPnspk'],
+                                                         resultsfolderpathname, cellpath, ParametersSimulation['GCstim'], 
+                                                         ParametersSimulation['nGClayer'], ParametersSimulation['simvar'],
+                                                         ParametersSimulation['lightstim'],ParametersSimulation['randseed'])                                                         
